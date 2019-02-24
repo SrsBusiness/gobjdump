@@ -40,6 +40,8 @@ type GBInstruction struct {
 	instruction []uint8
 	mnemonic    []string
 	err         error
+    prev        *GBInstruction
+    next        *GBInstruction
 }
 
 var r8 = []string{
@@ -1007,6 +1009,8 @@ func DecodeInstruction(r *bytes.Reader, addr uint32) (*GBInstruction, uint32) {
 		instruction: instruction,
 		mnemonic:    mnemonic,
 		err:         err,
+        prev:        nil,
+        next:        nil,
 	}, addr
 }
 
