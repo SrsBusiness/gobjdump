@@ -36,12 +36,12 @@ func (e *Z80AsmError) Error() string {
 }
 
 type GBInstruction struct {
-	addr        uint32
-	instruction []uint8
-	mnemonic    []string
-	err         error
-    prev        *GBInstruction
-    next        *GBInstruction
+	Addr        uint32
+	Instruction []uint8
+	Mnemonic    []string
+	Err         error
+    Prev        *GBInstruction
+    Next        *GBInstruction
 }
 
 var r8 = []string{
@@ -1005,38 +1005,38 @@ func DecodeInstruction(r *bytes.Reader, addr uint32) (*GBInstruction, uint32) {
 	addrPrev := addr
 	addr += uint32(len(instruction))
 	return &GBInstruction{
-		addr:        addrPrev,
-		instruction: instruction,
-		mnemonic:    mnemonic,
-		err:         err,
-        prev:        nil,
-        next:        nil,
+		Addr:        addrPrev,
+		Instruction: instruction,
+		Mnemonic:    mnemonic,
+		Err:         err,
+        Prev:        nil,
+        Next:        nil,
 	}, addr
 }
 
 func (i *GBInstruction) ToStr() string {
-	instructionHex := make([]uint8, hex.EncodedLen(len(i.instruction)))
-	hex.Encode(instructionHex, i.instruction)
-	if i.err != nil {
-		return fmt.Sprintf("0x%016x: %-12s %-6s", i.addr, instructionHex, i.err.Error())
+	instructionHex := make([]uint8, hex.EncodedLen(len(i.Instruction)))
+	hex.Encode(instructionHex, i.Instruction)
+	if i.Err != nil {
+		return fmt.Sprintf("0x%016x: %-12s %-6s", i.Addr, instructionHex, i.Err.Error())
 	} else {
 		operands := ""
-		if len(i.mnemonic) > 1 {
-			operands = strings.Join(i.mnemonic[1:], ", ")
+		if len(i.Mnemonic) > 1 {
+			operands = strings.Join(i.Mnemonic[1:], ", ")
 		}
-		return fmt.Sprintf("0x%016x: %-12s %-6s %s", i.addr, instructionHex, i.mnemonic[0], operands)
+		return fmt.Sprintf("0x%016x: %-12s %-6s %s", i.Addr, instructionHex, i.Mnemonic[0], operands)
 	}
 }
 
 func DisassemblerLoop(r *bytes.Reader, start uint32, end uint32) int {
 	var addr uint32 = start
-	for gbInstruction, addr := DecodeInstruction(r, addr); gbInstruction != nil && gbInstruction.addr < end; gbInstruction, addr = DecodeInstruction(r, addr) {
+	for gbInstruction, addr := DecodeInstruction(r, addr); gbInstruction != nil && gbInstruction.Addr < end; gbInstruction, addr = DecodeInstruction(r, addr) {
 		/* Generate hex encoding of instruction */
 		fmt.Printf("%s\n", gbInstruction.ToStr())
 
-		if gbInstruction.err != nil &&
-			gbInstruction.err.(*Z80AsmError).errorType != Z80AsmErrorIllegalInstruction &&
-			gbInstruction.err.(*Z80AsmError).errorType != Z80AsmErrorUnimplementedInstruction {
+		if gbInstruction.Err != nil &&
+			gbInstruction.Err.(*Z80AsmError).errorType != Z80AsmErrorIllegalInstruction &&
+			gbInstruction.Err.(*Z80AsmError).errorType != Z80AsmErrorUnimplementedInstruction {
 			return 1
 		}
 
@@ -1063,7 +1063,7 @@ func GBROMPreamble(reader *bytes.Reader) int {
 	var addr uint32 = 0x0100
 	reader.Seek(int64(addr), 0)
 	var gbInstruction *GBInstruction
-	for gbInstruction, addr = DecodeInstruction(reader, addr); gbInstruction != nil && gbInstruction.instruction[0] == 0x00; /* while nops */
+	for gbInstruction, addr = DecodeInstruction(reader, addr); gbInstruction != nil && gbInstruction.Instruction[0] == 0x00; /* while nops */
 	gbInstruction, addr = DecodeInstruction(reader, addr) {
 		fmt.Printf("%s\n", gbInstruction.ToStr())
 	}
@@ -1072,10 +1072,10 @@ func GBROMPreamble(reader *bytes.Reader) int {
 	fmt.Printf("\n")
 	fmt.Printf("---------------- %-40s ----------------\n", "Code Start")
 	var target uint16
-	switch gbInstruction.instruction[0] {
+	switch gbInstruction.Instruction[0] {
 	case 0xc3: /* jp */
 		/* compute the offset of the jp */
-		target = binary.LittleEndian.Uint16(gbInstruction.instruction[1:])
+		target = binary.LittleEndian.Uint16(gbInstruction.Instruction[1:])
 		reader.Seek(int64(target), 0)
 		return DisassemblerLoop(reader, uint32(target), uint32(0x8000))
 	default:
