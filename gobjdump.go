@@ -1018,13 +1018,13 @@ func (i *GBInstruction) ToStr() string {
 	instructionHex := make([]uint8, hex.EncodedLen(len(i.Instruction)))
 	hex.Encode(instructionHex, i.Instruction)
 	if i.Err != nil {
-		return fmt.Sprintf("0x%016x: %-12s %-6s", i.Addr, instructionHex, i.Err.Error())
+		return fmt.Sprintf("0x%04x: %-12s %-6s", i.Addr, instructionHex, i.Err.Error())
 	} else {
 		operands := ""
 		if len(i.Mnemonic) > 1 {
 			operands = strings.Join(i.Mnemonic[1:], ", ")
 		}
-		return fmt.Sprintf("0x%016x: %-12s %-6s %s", i.Addr, instructionHex, i.Mnemonic[0], operands)
+		return fmt.Sprintf("0x%04x: %-12s %-6s %s", i.Addr, instructionHex, i.Mnemonic[0], operands)
 	}
 }
 
